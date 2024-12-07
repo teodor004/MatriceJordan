@@ -1,5 +1,13 @@
-import React from "react";
-import { View, Text, StyleSheet, ImageBackground, ScrollView } from "react-native";
+import React, { useState } from "react";
+import {
+    View,
+    Text,
+    StyleSheet,
+    ImageBackground,
+    ScrollView,
+    TouchableOpacity,
+    Animated,
+} from "react-native";
 
 const FoodDashboard: React.FC = () => {
     const mealCategories = [
@@ -27,15 +35,25 @@ const FoodDashboard: React.FC = () => {
                 { name: "Vegetable Stir-fry", details: "Mixed vegetables with tofu", background: "https://via.placeholder.com/150/4682B4/FFFFFF?text=Dinner" },
             ],
         },
-        {
-            title: "Snack",
-            recipes: [
-                { name: "Fruit Salad", details: "Fresh mixed fruits", background: "https://via.placeholder.com/150/FFFF00/FFFFFF?text=Snack" },
-                { name: "Yogurt and Granola", details: "Greek yogurt with granola", background: "https://via.placeholder.com/150/FFD700/FFFFFF?text=Snack" },
-                { name: "Nut Mix", details: "Assorted nuts and seeds", background: "https://via.placeholder.com/150/FFEC8B/FFFFFF?text=Snack" },
-            ],
-        },
     ];
+
+    // State pentru a urmări ce rețetă este mărită
+    const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
+    const [animationValues, setAnimationValues] = useState(
+        Array(mealCategories.reduce((acc, category) => acc + category.recipes.length, 0)).fill(0).map(() => new Animated.Value(1))
+    );
+
+    const toggleRecipeDetails = (index: number) => {
+        const newExpandedRecipe = expandedRecipe === index ? null : index;
+        setExpandedRecipe(newExpandedRecipe);
+
+        // Animate the clicked recipe
+        Animated.timing(animationValues[index], {
+            toValue: newExpandedRecipe !== null ? 1.2 : 1,
+            duration: 300,
+            useNativeDriver: true,
+        }).start();
+    };
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
@@ -45,26 +63,43 @@ const FoodDashboard: React.FC = () => {
             </View>
 
             {/* Categorii de mese */}
-            <View style={styles.mealCategories}>
-                {mealCategories.map((category, index) => (
-                    <View key={index} style={styles.categorySection}>
-                        <Text style={styles.categoryTitle}>{category.title}</Text>
-                        {category.recipes.map((recipe, recipeIndex) => (
-                            <ImageBackground
+            {mealCategories.map((category, categoryIndex) => (
+                <View key={categoryIndex} style={styles.categorySection}>
+                    <Text style={styles.categoryTitle}>{category.title}</Text>
+                    {category.recipes.map((recipe, recipeIndex) => {
+                        const globalIndex = categoryIndex * 3 + recipeIndex; // Calculează indexul global pentru animație
+                        return (
+                            <TouchableOpacity
                                 key={recipeIndex}
-                                source={{ uri: recipe.background }}
-                                style={styles.recipe}
-                                imageStyle={styles.recipeBackground}
+                                activeOpacity={0.7}
+                                onPress={() => toggleRecipeDetails(globalIndex)}
                             >
-                                <View style={styles.recipeContent}>
-                                    <Text style={styles.recipeName}>{recipe.name}</Text>
-                                    <Text style={styles.recipeDetails}>{recipe.details}</Text>
-                                </View>
-                            </ImageBackground>
-                        ))}
-                    </View>
-                ))}
-            </View>
+                                <Animated.View
+                                    style={[
+                                        styles.recipe,
+                                        {
+                                            transform: [{ scale: animationValues[globalIndex] }],
+                                        },
+                                    ]}
+                                >
+                                    <ImageBackground
+                                        source={{ uri: recipe.background }}
+                                        style={styles.recipeBackground}
+                                        imageStyle={styles.recipeBackgroundImage}
+                                    >
+                                        <View style={styles.recipeContent}>
+                                            <Text style={styles.recipeName}>{recipe.name}</Text>
+                                            {expandedRecipe === globalIndex && (
+                                                <Text style={styles.recipeDetails}>{recipe.details}</Text>
+                                            )}
+                                        </View>
+                                    </ImageBackground>
+                                </Animated.View>
+                            </TouchableOpacity>
+                        );
+                    })}
+                </View>
+            ))}
         </ScrollView>
     );
 };
@@ -78,11 +113,11 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     header: {
-        backgroundColor: "#FFA500", // Culoare solidă portocalie
+        backgroundColor: "#FFA500",
         paddingVertical: 20,
         paddingHorizontal: 10,
         alignItems: "center",
-        borderRadius: 15, // Marginile rotunjite
+        borderRadius: 15,
         marginBottom: 20,
     },
     headerText: {
@@ -90,9 +125,6 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         color: "#ffffff",
         textTransform: "capitalize",
-    },
-    mealCategories: {
-        marginVertical: 20,
     },
     categorySection: {
         marginBottom: 30,
@@ -107,12 +139,16 @@ const styles = StyleSheet.create({
     recipe: {
         height: 150,
         marginBottom: 15,
-        justifyContent: "flex-end",
         borderRadius: 8,
         overflow: "hidden",
+        justifyContent: "flex-end",
     },
     recipeBackground: {
-        opacity: 0.7,
+        opacity: 0.8,
+        flex: 1,
+    },
+    recipeBackgroundImage: {
+        borderRadius: 8,
     },
     recipeContent: {
         backgroundColor: "rgba(0, 0, 0, 0.5)",

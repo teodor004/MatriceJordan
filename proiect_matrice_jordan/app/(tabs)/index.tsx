@@ -5,9 +5,9 @@ const FitnessDashboard: React.FC = () => {
     const muscleGroups = [
         {
             title: "Chest",
-            exercises: "Push-ups, Bench Press",
+            exercises: "Bench Press",
             setsReps: "3 sets x 12 reps",
-            background: "https://via.placeholder.com/150/FF0000/FFFFFF?text=Chest",
+            background: "https://blog.nasm.org/hubfs/bench-press-form.jpg",
         },
         {
             title: "Back",

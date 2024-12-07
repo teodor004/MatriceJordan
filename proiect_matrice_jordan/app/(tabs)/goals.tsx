@@ -8,10 +8,13 @@ import {
     TouchableOpacity,
     ScrollView,
 } from "react-native";
+import Slider from "@react-native-community/slider";
 import { Picker } from "@react-native-picker/picker";
 
-// Definește tipurile pentru datele din formular
 type FormData = {
+    age: string;
+    weight: string;
+    height: string;
     primaryGoal: string;
     workoutIntensity: number;
     dietaryPreferences: string[];
@@ -19,31 +22,30 @@ type FormData = {
 
 const FitnessGoalsSurvey = () => {
     const [formData, setFormData] = useState<FormData>({
+        age: "",
+        weight: "",
+        height: "",
         primaryGoal: "Build muscle",
         workoutIntensity: 1,
         dietaryPreferences: [],
     });
 
-    // Funcție pentru selectarea unei opțiuni
-    const handleSelectChange = <T extends keyof FormData>(key: T, value: FormData[T]) => {
+    const handleInputChange = <T extends keyof FormData>(key: T, value: FormData[T]) => {
         setFormData((prev) => ({
             ...prev,
             [key]: value,
         }));
     };
 
-    // Funcție pentru checkbox-uri
     const handleCheckboxChange = (value: string) => {
         setFormData((prev) => {
             const dietaryPreferences = [...prev.dietaryPreferences];
             if (dietaryPreferences.includes(value)) {
-                // Dacă valoarea este deja selectată, o eliminăm
                 return {
                     ...prev,
                     dietaryPreferences: dietaryPreferences.filter((item) => item !== value),
                 };
             } else {
-                // Dacă nu, o adăugăm
                 return {
                     ...prev,
                     dietaryPreferences: [...dietaryPreferences, value],
@@ -52,7 +54,6 @@ const FitnessGoalsSurvey = () => {
         });
     };
 
-    // Funcție pentru salvarea datelor
     const saveData = async () => {
         try {
             const response = await fetch("http://localhost:5000/api/users/create", {
@@ -64,28 +65,67 @@ const FitnessGoalsSurvey = () => {
             });
 
             if (response.ok) {
-                alert("Datele au fost salvate cu succes!");
+                alert("Your fitness goals have been saved successfully!");
             } else {
                 const result = await response.json();
-                alert("Eroare la salvarea datelor: " + result.message);
+                alert("Error saving data: " + result.message);
             }
         } catch (error) {
-            console.error("Eroare:", error);
-            alert("A apărut o eroare. Te rugăm să încerci din nou.");
+            console.error("Error:", error);
+            alert("An error occurred. Please try again.");
         }
     };
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
             <View style={styles.card}>
-                <Text style={styles.heading}>Setează-ți obiectivele</Text>
+                <Text style={styles.heading}>Set Your Fitness Goals</Text>
+
+                {/* Age */}
+                <View style={styles.groupContainer}>
+                    <Text style={styles.label}>What is your age?</Text>
+                    <TextInput
+                        value={formData.age}
+                        keyboardType="numeric"
+                        onChangeText={(value) => handleInputChange("age", value)}
+                        placeholder="Enter your age"
+                        placeholderTextColor="#9ca3af"
+                        style={styles.input}
+                    />
+                </View>
+
+                {/* Weight */}
+                <View style={styles.groupContainer}>
+                    <Text style={styles.label}>What is your weight? (kg or lbs)</Text>
+                    <TextInput
+                        value={formData.weight}
+                        keyboardType="numeric"
+                        onChangeText={(value) => handleInputChange("weight", value)}
+                        placeholder="Enter your weight"
+                        placeholderTextColor="#9ca3af"
+                        style={styles.input}
+                    />
+                </View>
+
+                {/* Height */}
+                <View style={styles.groupContainer}>
+                    <Text style={styles.label}>What is your height? (cm or inches)</Text>
+                    <TextInput
+                        value={formData.height}
+                        keyboardType="numeric"
+                        onChangeText={(value) => handleInputChange("height", value)}
+                        placeholder="Enter your height"
+                        placeholderTextColor="#9ca3af"
+                        style={styles.input}
+                    />
+                </View>
 
                 {/* Primary Fitness Goal */}
                 <View style={styles.groupContainer}>
-                    <Text style={styles.label}>Ce obiectiv fitness ai?</Text>
+                    <Text style={styles.label}>What is your primary fitness goal?</Text>
                     <Picker
                         selectedValue={formData.primaryGoal}
-                        onValueChange={(value) => handleSelectChange("primaryGoal", value)}
+                        onValueChange={(value) => handleInputChange("primaryGoal", value)}
                         style={styles.select}
                     >
                         <Picker.Item label="Build muscle" value="Build muscle" />
@@ -98,27 +138,47 @@ const FitnessGoalsSurvey = () => {
 
                 {/* Workout Intensity */}
                 <View style={styles.groupContainer}>
-                    <Text style={styles.label}>Cât de intens preferi antrenamentele? (1 - 5)</Text>
-                    <TextInput
-                        value={String(formData.workoutIntensity)}
-                        keyboardType="numeric"
-                        onChangeText={(value) =>
-                            handleSelectChange("workoutIntensity", Math.max(1, Math.min(5, Number(value))))
+                    <Text style={styles.label}>
+                        What level of workout intensity do you prefer? (1 - 5)
+                    </Text>
+                    <Slider
+                        value={formData.workoutIntensity}
+                        onValueChange={(value) =>
+                            handleInputChange("workoutIntensity", Math.round(value))
                         }
-                        style={styles.input}
+                        minimumValue={1}
+                        maximumValue={5}
+                        step={1}
+                        minimumTrackTintColor="#FFA500"
+                        maximumTrackTintColor="#4b5563"
+                        thumbTintColor="#FFA500"
                     />
+                    <Text style={styles.sliderValue}>
+                        Intensity: {formData.workoutIntensity}
+                    </Text>
                 </View>
 
                 {/* Dietary Preferences */}
                 <View style={styles.groupContainer}>
-                    <Text style={styles.label}>Ai preferințe sau restricții alimentare?</Text>
-                    {["Vegan", "Vegetarian", "Lactose intolerant", "Gluten-free"].map((item) => (
+                    <Text style={styles.label}>
+                        What dietary preferences or restrictions should we consider?
+                    </Text>
+                    {[
+                        "Vegan",
+                        "Vegetarian",
+                        "Lactose intolerant",
+                        "Allergic to nuts",
+                        "Allergic to eggs",
+                        "Gluten-free",
+                        "No restrictions",
+                    ].map((item) => (
                         <TouchableOpacity
                             key={item}
                             onPress={() => handleCheckboxChange(item)}
                             style={[
                                 styles.checkbox,
-                                formData.dietaryPreferences.includes(item) && styles.checkboxSelected,
+                                formData.dietaryPreferences.includes(item) &&
+                                styles.checkboxSelected,
                             ]}
                         >
                             <Text style={styles.checkboxText}>{item}</Text>
@@ -128,7 +188,7 @@ const FitnessGoalsSurvey = () => {
 
                 {/* Save Button */}
                 <View style={styles.groupContainer}>
-                    <Button title="Salvează" onPress={saveData} color="#FFA500" />
+                    <Button title="Submit" onPress={saveData} color="#FFA500" />
                 </View>
             </View>
         </ScrollView>
@@ -196,6 +256,11 @@ const styles = StyleSheet.create({
     },
     checkboxText: {
         color: "#FFF",
+    },
+    sliderValue: {
+        color: "#FFF",
+        marginTop: 10,
+        textAlign: "center",
     },
 });
 
