@@ -1,54 +1,90 @@
-import React from "react";
-import { View, Text, StyleSheet, ImageBackground, ScrollView } from "react-native";
+import React, { useRef, useEffect, useState } from "react";
+import {
+    View,
+    Text,
+    StyleSheet,
+    ImageBackground,
+    ScrollView,
+    Animated,
+    TouchableWithoutFeedback,
+} from "react-native";
 
 const FitnessDashboard: React.FC = () => {
     const muscleGroups = [
         {
             title: "Chest",
-            exercises: "Bench Press",
+            exercises: "Push-ups, Bench Press",
             setsReps: "3 sets x 12 reps",
-            background: "https://blog.nasm.org/hubfs/bench-press-form.jpg",
+            additionalInfo: "Chest exercises build pectoral muscles for strength.",
+            background: "https://via.placeholder.com/150/FF0000/FFFFFF?text=Chest",
         },
         {
             title: "Back",
             exercises: "Pull-ups, Deadlifts",
             setsReps: "3 sets x 10 reps",
+            additionalInfo: "Back exercises improve posture and core strength.",
             background: "https://via.placeholder.com/150/00FF00/FFFFFF?text=Back",
         },
         {
             title: "Legs",
             exercises: "Squats, Lunges",
             setsReps: "4 sets x 15 reps",
+            additionalInfo: "Leg exercises strengthen quads, hamstrings, and calves.",
             background: "https://via.placeholder.com/150/0000FF/FFFFFF?text=Legs",
         },
         {
             title: "Arms",
             exercises: "Bicep Curls, Tricep Dips",
             setsReps: "3 sets x 12 reps",
+            additionalInfo: "Arm exercises focus on biceps, triceps, and forearms.",
             background: "https://via.placeholder.com/150/FFFF00/FFFFFF?text=Arms",
         },
         {
             title: "Shoulders",
             exercises: "Shoulder Press, Lateral Raises",
             setsReps: "3 sets x 10 reps",
+            additionalInfo: "Shoulder exercises improve upper body stability.",
             background: "https://via.placeholder.com/150/FF00FF/FFFFFF?text=Shoulders",
         },
         {
             title: "Abs",
             exercises: "Crunches, Planks",
             setsReps: "4 sets x 20 reps",
+            additionalInfo: "Core exercises enhance overall strength and balance.",
             background: "https://via.placeholder.com/150/00FFFF/FFFFFF?text=Abs",
         },
     ];
 
-    const totalCalories = 3000;
-    const burnedCalories = 2456;
-    const progress = burnedCalories / totalCalories;
+    const progressBarWidth = useRef(new Animated.Value(0)).current;
+    const progress = 2456 / 3000; // Progresul caloric în procente
 
-    const getBarColor = () => {
-        if (progress < 0.5) return "#ffffff"; // Roșu
-        if (progress < 0.8) return "#ffffff"; // Portocaliu
-        return "#ffffff"; // Verde
+    const heightAnimations = useRef(
+        muscleGroups.map(() => new Animated.Value(100)) // Înălțimea inițială a casetelor
+    ).current;
+    const [selectedGroup, setSelectedGroup] = useState<number | null>(null);
+
+    useEffect(() => {
+        Animated.timing(progressBarWidth, {
+            toValue: progress * 100,
+            duration: 1500,
+            useNativeDriver: false,
+        }).start();
+    }, []);
+
+    const handlePressIn = (index: number) => {
+        setSelectedGroup(index);
+        Animated.spring(heightAnimations[index], {
+            toValue: 200, // Dublăm înălțimea
+            useNativeDriver: false,
+        }).start();
+    };
+
+    const handlePressOut = (index: number) => {
+        setSelectedGroup(null);
+        Animated.spring(heightAnimations[index], {
+            toValue: 100, // Revenim la înălțimea inițială
+            useNativeDriver: false,
+        }).start();
     };
 
     return (
@@ -56,19 +92,20 @@ const FitnessDashboard: React.FC = () => {
             {/* Header-ul aplicației */}
             <View style={styles.header}>
                 <Text style={styles.headerText}>Today's calories</Text>
-                {/* Bara de progres pentru calorii */}
                 <View style={styles.progressBarContainer}>
-                    <View
+                    <Animated.View
                         style={[
                             styles.progressBar,
-                            { width: `${progress * 100}%`, backgroundColor: getBarColor() }
-
+                            {
+                                width: progressBarWidth.interpolate({
+                                    inputRange: [0, 100],
+                                    outputRange: ["0%", "100%"],
+                                }),
+                            },
                         ]}
                     />
                 </View>
-                <Text style={styles.calorieText}>
-                    {burnedCalories} / {totalCalories} calories burned
-                </Text>
+                <Text style={styles.calorieText}>2456 / 3000 calories burned</Text>
             </View>
 
             {/* Statistici */}
@@ -99,21 +136,36 @@ const FitnessDashboard: React.FC = () => {
                 </View>
             </View>
 
-            {/* Grupele musculare */}
+            {/* Grupele musculare animate */}
             <View style={styles.muscleGroups}>
                 {muscleGroups.map((group, index) => (
-                    <ImageBackground
+                    <TouchableWithoutFeedback
                         key={index}
-                        source={{ uri: group.background }}
-                        style={styles.group}
-                        imageStyle={styles.groupBackground}
+                        onPressIn={() => handlePressIn(index)}
+                        onPressOut={() => handlePressOut(index)}
                     >
-                        <View style={styles.groupContent}>
-                            <Text style={styles.groupTitle}>{group.title}</Text>
-                            <Text style={styles.groupText}>{group.exercises}</Text>
-                            <Text style={styles.groupText}>{group.setsReps}</Text>
-                        </View>
-                    </ImageBackground>
+                        <Animated.View
+                            style={[
+                                styles.group,
+                                { height: heightAnimations[index] }, // Animația doar pe înălțime
+                            ]}
+                        >
+                            <ImageBackground
+                                source={{ uri: group.background }}
+                                style={styles.groupBackground}
+                                imageStyle={styles.groupImage}
+                            >
+                                <View style={styles.groupContent}>
+                                    <Text style={styles.groupTitle}>{group.title}</Text>
+                                    <Text style={styles.groupText}>{group.exercises}</Text>
+                                    <Text style={styles.groupText}>{group.setsReps}</Text>
+                                    {selectedGroup === index && (
+                                        <Text style={styles.additionalInfo}>{group.additionalInfo}</Text>
+                                    )}
+                                </View>
+                            </ImageBackground>
+                        </Animated.View>
+                    </TouchableWithoutFeedback>
                 ))}
             </View>
         </ScrollView>
@@ -129,11 +181,11 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     header: {
-        backgroundColor: "#FFA500", // Culoare solidă portocalie
+        backgroundColor: "#FFA500",
         paddingVertical: 20,
         paddingHorizontal: 10,
         alignItems: "center",
-        borderRadius: 15, // Marginile rotunjite
+        borderRadius: 15,
         marginBottom: 20,
     },
     headerText: {
@@ -152,6 +204,7 @@ const styles = StyleSheet.create({
     },
     progressBar: {
         height: "100%",
+        backgroundColor: "#00FF00",
         borderRadius: 5,
     },
     calorieText: {
@@ -188,7 +241,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     title: {
-        textAlign: 'center',
+        textAlign: "center",
         fontSize: 18,
         fontWeight: "bold",
         color: "#FFA500",
@@ -201,27 +254,36 @@ const styles = StyleSheet.create({
         marginVertical: 20,
     },
     group: {
-        height: 200,
         marginBottom: 20,
-        justifyContent: "flex-end",
         borderRadius: 8,
         overflow: "hidden",
+        backgroundColor: "#333333",
     },
     groupBackground: {
-        opacity: 0.7,
+        flex: 1,
+    },
+    groupImage: {
+        opacity: 0.8,
     },
     groupContent: {
         backgroundColor: "rgba(0, 0, 0, 0.5)",
         padding: 10,
+        flex: 1,
+        justifyContent: "center",
     },
     groupTitle: {
         fontSize: 20,
         fontWeight: "bold",
-        color: "#FFA500",
+        color: "#FFFFFF",
     },
     groupText: {
         fontSize: 16,
-        color: "#ffffff",
+        color: "#FFFFFF",
+    },
+    additionalInfo: {
+        marginTop: 10,
+        fontSize: 14,
+        color: "#FFFFFF",
     },
 });
 

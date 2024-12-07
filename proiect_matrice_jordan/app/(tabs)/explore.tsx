@@ -14,71 +14,109 @@ const FoodDashboard: React.FC = () => {
         {
             title: "Breakfast",
             recipes: [
-                { name: "Pancakes", details: "Fluffy pancakes with maple syrup", background: "https://via.placeholder.com/150/FF0000/FFFFFF?text=Breakfast" },
-                { name: "Smoothie Bowl", details: "Berry smoothie with granola", background: "https://via.placeholder.com/150/FF6347/FFFFFF?text=Breakfast" },
-                { name: "Oatmeal", details: "Oatmeal with fruits and nuts", background: "https://via.placeholder.com/150/FFA500/FFFFFF?text=Breakfast" },
+                {
+                    name: "Pancakes",
+                    details: "Fluffy pancakes with maple syrup",
+                    background: "https://cdn.apartmenttherapy.info/image/upload/f_auto,q_auto:eco,c_fill,g_auto,w_1500,ar_3:2/k%2FPhoto%2FRecipes%2F2024-06-seo-pancakes%2Fseo-pancakes-232",
+                },
+                {
+                    name: "Smoothie Bowl",
+                    details: "Berry smoothie with granola",
+                    background: "https://images.immediate.co.uk/production/volatile/sites/30/2022/12/Smoothie-bowl-16df176.jpg",
+                },
+                {
+                    name: "Oatmeal",
+                    details: "Oatmeal with fruits and nuts",
+                    background: "https://joybauer.com/wp-content/uploads/2017/12/Oatmeal-with-berries2.jpg",
+                },
             ],
         },
         {
             title: "Lunch",
             recipes: [
-                { name: "Grilled Chicken Salad", details: "Chicken, greens, and vinaigrette", background: "https://via.placeholder.com/150/00FF00/FFFFFF?text=Lunch" },
-                { name: "Quinoa Bowl", details: "Quinoa with roasted vegetables", background: "https://via.placeholder.com/150/32CD32/FFFFFF?text=Lunch" },
-                { name: "Pasta Primavera", details: "Pasta with seasonal vegetables", background: "https://via.placeholder.com/150/228B22/FFFFFF?text=Lunch" },
+                {
+                    name: "Grilled Chicken Salad",
+                    details: "Chicken, greens, and vinaigrette",
+                    background: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRtBNG4k8JOq92tFO1MuDtIDP37RFB3y0g4Vw&s",
+                },
+                {
+                    name: "Quinoa Bowl",
+                    details: "Quinoa with roasted vegetables",
+                    background: "https://dudethatcookz.com/wp-content/uploads/2020/11/quinoa_roasted_veggies_5-scaled.jpg",
+                },
+                {
+                    name: "Pasta Primavera",
+                    details: "Pasta with seasonal vegetables",
+                    background: "https://images.themodernproper.com/billowy-turkey/production/posts/PastaPrimavera_10.jpg?w=1200&h=1200&q=60&fm=jpg&fit=crop&dm=1719193287&s=0104e0b241aea73e5709db128503d749",
+                },
             ],
         },
         {
             title: "Dinner",
             recipes: [
-                { name: "Steak and Potatoes", details: "Grilled steak with mashed potatoes", background: "https://via.placeholder.com/150/0000FF/FFFFFF?text=Dinner" },
-                { name: "Salmon and Asparagus", details: "Grilled salmon with asparagus", background: "https://via.placeholder.com/150/1E90FF/FFFFFF?text=Dinner" },
-                { name: "Vegetable Stir-fry", details: "Mixed vegetables with tofu", background: "https://via.placeholder.com/150/4682B4/FFFFFF?text=Dinner" },
+                {
+                    name: "Steak and Potatoes",
+                    details: "Grilled steak with mashed potatoes",
+                    background: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRbQCkTsfr9-zwdZIdpx2VGe3-5-JXBPexsQ&s",
+                },
+                {
+                    name: "Salmon and Asparagus",
+                    details: "Grilled salmon with asparagus",
+                    background: "https://cdn-uploads.mealime.com/uploads/recipe/thumbnail/307/presentation_0ed152c0-47ef-4536-81b4-02dc6f31f876.jpg",
+                },
+                {
+                    name: "Vegetable Stir-fry",
+                    details: "Mixed vegetables with tofu",
+                    background: "https://natashaskitchen.com/wp-content/uploads/2020/08/Vegetable-Stir-Fry-2.jpg",
+                },
             ],
         },
     ];
 
-    // State pentru a urmări ce rețetă este mărită
     const [expandedRecipe, setExpandedRecipe] = useState<number | null>(null);
     const [animationValues, setAnimationValues] = useState(
-        Array(mealCategories.reduce((acc, category) => acc + category.recipes.length, 0)).fill(0).map(() => new Animated.Value(1))
+        Array(mealCategories.reduce((acc, category) => acc + category.recipes.length, 0))
+            .fill(0)
+            .map(() => new Animated.Value(1))
     );
 
     const toggleRecipeDetails = (index: number) => {
-        const newExpandedRecipe = expandedRecipe === index ? null : index;
-        setExpandedRecipe(newExpandedRecipe);
+        const isExpanded = expandedRecipe === index;
+        setExpandedRecipe(isExpanded ? null : index);
 
-        // Animate the clicked recipe
         Animated.timing(animationValues[index], {
-            toValue: newExpandedRecipe !== null ? 1.2 : 1,
+            toValue: isExpanded ? 1 : 2, // Dublarea înălțimii
             duration: 300,
-            useNativeDriver: true,
+            useNativeDriver: false, // Animare pentru dimensiuni (nu suportă Native Driver)
         }).start();
     };
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-            {/* Titlul aplicației */}
             <View style={styles.header}>
                 <Text style={styles.headerText}>Daily Meal Plan</Text>
             </View>
 
-            {/* Categorii de mese */}
             {mealCategories.map((category, categoryIndex) => (
                 <View key={categoryIndex} style={styles.categorySection}>
                     <Text style={styles.categoryTitle}>{category.title}</Text>
                     {category.recipes.map((recipe, recipeIndex) => {
-                        const globalIndex = categoryIndex * 3 + recipeIndex; // Calculează indexul global pentru animație
+                        const globalIndex = categoryIndex * 3 + recipeIndex;
+
                         return (
                             <TouchableOpacity
                                 key={recipeIndex}
-                                activeOpacity={0.7}
+                                activeOpacity={0.8}
                                 onPress={() => toggleRecipeDetails(globalIndex)}
                             >
                                 <Animated.View
                                     style={[
                                         styles.recipe,
                                         {
-                                            transform: [{ scale: animationValues[globalIndex] }],
+                                            height: animationValues[globalIndex].interpolate({
+                                                inputRange: [1, 2],
+                                                outputRange: [150, 300], // Animarea înălțimii
+                                            }),
                                         },
                                     ]}
                                 >
@@ -124,7 +162,6 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: "bold",
         color: "#ffffff",
-        textTransform: "capitalize",
     },
     categorySection: {
         marginBottom: 30,
@@ -137,15 +174,14 @@ const styles = StyleSheet.create({
         textAlign: "center",
     },
     recipe: {
-        height: 150,
         marginBottom: 15,
         borderRadius: 8,
         overflow: "hidden",
         justifyContent: "flex-end",
     },
     recipeBackground: {
-        opacity: 0.8,
         flex: 1,
+        justifyContent: "flex-end",
     },
     recipeBackgroundImage: {
         borderRadius: 8,
@@ -162,6 +198,7 @@ const styles = StyleSheet.create({
     recipeDetails: {
         fontSize: 14,
         color: "#ffffff",
+        marginTop: 5,
     },
 });
 
