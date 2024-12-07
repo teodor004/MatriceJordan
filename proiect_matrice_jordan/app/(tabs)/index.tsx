@@ -7,37 +7,37 @@ const FitnessDashboard: React.FC = () => {
             title: "Chest",
             exercises: "Push-ups, Bench Press",
             setsReps: "3 sets x 12 reps",
-            background: "https://example.com/chest.jpg",
+            background: "https://via.placeholder.com/150/FF0000/FFFFFF?text=Chest",
         },
         {
             title: "Back",
             exercises: "Pull-ups, Deadlifts",
             setsReps: "3 sets x 10 reps",
-            background: "https://example.com/back.jpg",
+            background: "https://via.placeholder.com/150/00FF00/FFFFFF?text=Back",
         },
         {
             title: "Legs",
             exercises: "Squats, Lunges",
             setsReps: "4 sets x 15 reps",
-            background: "https://example.com/legs.jpg",
+            background: "https://via.placeholder.com/150/0000FF/FFFFFF?text=Legs",
         },
         {
             title: "Arms",
             exercises: "Bicep Curls, Tricep Dips",
             setsReps: "3 sets x 12 reps",
-            background: "https://example.com/arms.jpg",
+            background: "https://via.placeholder.com/150/FFFF00/FFFFFF?text=Arms",
         },
         {
             title: "Shoulders",
             exercises: "Shoulder Press, Lateral Raises",
             setsReps: "3 sets x 10 reps",
-            background: "https://example.com/shoulders.jpg",
+            background: "https://via.placeholder.com/150/FF00FF/FFFFFF?text=Shoulders",
         },
         {
             title: "Abs",
             exercises: "Crunches, Planks",
             setsReps: "4 sets x 20 reps",
-            background: "https://example.com/abs.jpg",
+            background: "https://via.placeholder.com/150/00FFFF/FFFFFF?text=Abs",
         },
     ];
 
@@ -46,23 +46,24 @@ const FitnessDashboard: React.FC = () => {
     const progress = burnedCalories / totalCalories;
 
     const getBarColor = () => {
-        if (progress < 0.5) return "#FF4500"; // Roșu
-        if (progress < 0.8) return "#FFA500"; // Portocaliu
-        return "#00FF7F"; // Verde
+        if (progress < 0.5) return "#ffffff"; // Roșu
+        if (progress < 0.8) return "#ffffff"; // Portocaliu
+        return "#ffffff"; // Verde
     };
 
     return (
         <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
             {/* Header-ul aplicației */}
-            <View style={styles.progressBarBox}>
-                <Text style={styles.headerText}>Muschii lui MAXIM</Text>
+            <View style={styles.header}>
+                <Text style={styles.headerText}>Today's calories</Text>
                 {/* Bara de progres pentru calorii */}
                 <View style={styles.progressBarContainer}>
                     <View
                         style={[
                             styles.progressBar,
-                            { width: '${progress * 100}%', backgroundColor: getBarColor() },
-                            ]}
+                            { width: `${progress * 100}%`, backgroundColor: getBarColor() }
+
+                        ]}
                     />
                 </View>
                 <Text style={styles.calorieText}>
@@ -89,7 +90,7 @@ const FitnessDashboard: React.FC = () => {
             {/* Vizite la sală și alte statistici */}
             <View style={styles.progress}>
                 <View style={styles.progressItem}>
-                    <Text style={styles.title}>Gym visits</Text>
+                    <Text style={styles.title}>Workouts this week</Text>
                     <Text style={styles.large}>3/5</Text>
                 </View>
                 <View style={styles.progressItem}>
@@ -128,16 +129,18 @@ const styles = StyleSheet.create({
         padding: 20,
     },
     header: {
-        backgroundColor: "#FFA500",
+        backgroundColor: "#FFA500", // Culoare solidă portocalie
         paddingVertical: 20,
         paddingHorizontal: 10,
         alignItems: "center",
+        borderRadius: 15, // Marginile rotunjite
+        marginBottom: 20,
     },
     headerText: {
         fontSize: 24,
         fontWeight: "bold",
         color: "#ffffff",
-        textTransform: "uppercase",
+        textTransform: "capitalize",
     },
     progressBarContainer: {
         width: "100%",
@@ -184,18 +187,11 @@ const styles = StyleSheet.create({
         marginHorizontal: 5,
         alignItems: "center",
     },
-    progressBarBox: {
-        backgroundColor: "#1e1e1e",
-        padding: 20,
-        borderRadius: 8,
-        flex: 1,
-        marginHorizontal: 5,
-        alignItems: "center",
-    },
     title: {
+        textAlign: 'center',
         fontSize: 18,
         fontWeight: "bold",
-        color: "#FFA500", // Portocaliu pentru titluri
+        color: "#FFA500",
     },
     large: {
         fontSize: 24,
@@ -221,7 +217,7 @@ const styles = StyleSheet.create({
     groupTitle: {
         fontSize: 20,
         fontWeight: "bold",
-        color: "#FFA500", // Portocaliu pentru titluri de grupuri musculare
+        color: "#FFA500",
     },
     groupText: {
         fontSize: 16,

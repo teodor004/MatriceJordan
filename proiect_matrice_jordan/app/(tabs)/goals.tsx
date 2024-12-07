@@ -1,113 +1,202 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, TextInput, Button, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';  // Dacă ai deja un custom text component
-import { ThemedView } from '@/components/ThemedView';  // Dacă ai deja un custom view component
+import React, { useState } from "react";
+import {
+    View,
+    Text,
+    StyleSheet,
+    TextInput,
+    Button,
+    TouchableOpacity,
+    ScrollView,
+} from "react-native";
+import { Picker } from "@react-native-picker/picker";
 
-export default function GoalsScreen() {
-    const [age, setAge] = useState('');
-    const [weight, setWeight] = useState('');
-    const [height, setHeight] = useState('');
-    const [scop, setScop] = useState('');
+// Definește tipurile pentru datele din formular
+type FormData = {
+    primaryGoal: string;
+    workoutIntensity: number;
+    dietaryPreferences: string[];
+};
 
-    // Functia pentru trimiterea datelor la server
+const FitnessGoalsSurvey = () => {
+    const [formData, setFormData] = useState<FormData>({
+        primaryGoal: "Build muscle",
+        workoutIntensity: 1,
+        dietaryPreferences: [],
+    });
+
+    // Funcție pentru selectarea unei opțiuni
+    const handleSelectChange = <T extends keyof FormData>(key: T, value: FormData[T]) => {
+        setFormData((prev) => ({
+            ...prev,
+            [key]: value,
+        }));
+    };
+
+    // Funcție pentru checkbox-uri
+    const handleCheckboxChange = (value: string) => {
+        setFormData((prev) => {
+            const dietaryPreferences = [...prev.dietaryPreferences];
+            if (dietaryPreferences.includes(value)) {
+                // Dacă valoarea este deja selectată, o eliminăm
+                return {
+                    ...prev,
+                    dietaryPreferences: dietaryPreferences.filter((item) => item !== value),
+                };
+            } else {
+                // Dacă nu, o adăugăm
+                return {
+                    ...prev,
+                    dietaryPreferences: [...dietaryPreferences, value],
+                };
+            }
+        });
+    };
+
+    // Funcție pentru salvarea datelor
     const saveData = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/users/create', {
-                method: 'POST',
+            const response = await fetch("http://localhost:5000/api/users/create", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                 },
-                body: JSON.stringify({
-                    age,
-                    weight,
-                    height,
-                    scop,
-                }),
+                body: JSON.stringify(formData),
             });
-            const data = await response.json();
+
             if (response.ok) {
-                alert('Datele au fost salvate cu succes!');
+                alert("Datele au fost salvate cu succes!");
             } else {
-                alert('Eroare la salvarea datelor: ' + data.message);
+                const result = await response.json();
+                alert("Eroare la salvarea datelor: " + result.message);
             }
         } catch (error) {
-            console.error('Eroare:', error);
-            alert('A apărut o eroare. Te rugăm să încerci din nou.');
+            console.error("Eroare:", error);
+            alert("A apărut o eroare. Te rugăm să încerci din nou.");
         }
     };
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-            <ScrollView contentContainerStyle={styles.scrollViewContent}>
-                <ThemedView style={styles.innerContainer}>
-                    <ThemedText style={styles.title}>Setează-ți obiectivele</ThemedText>
+        <ScrollView contentContainerStyle={styles.container}>
+            <View style={styles.card}>
+                <Text style={styles.heading}>Setează-ți obiectivele</Text>
 
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Vârsta"
-                        value={age}
-                        onChangeText={setAge}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Greutate"
-                        value={weight}
-                        onChangeText={setWeight}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Înălțime"
-                        value={height}
-                        onChangeText={setHeight}
-                        keyboardType="numeric"
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Scopul (ex: pierdere în greutate, creștere în masă)"
-                        value={scop}
-                        onChangeText={setScop}
-                    />
+                {/* Primary Fitness Goal */}
+                <View style={styles.groupContainer}>
+                    <Text style={styles.label}>Ce obiectiv fitness ai?</Text>
+                    <Picker
+                        selectedValue={formData.primaryGoal}
+                        onValueChange={(value) => handleSelectChange("primaryGoal", value)}
+                        style={styles.select}
+                    >
+                        <Picker.Item label="Build muscle" value="Build muscle" />
+                        <Picker.Item label="Lose weight" value="Lose weight" />
+                        <Picker.Item label="Improve endurance" value="Improve endurance" />
+                        <Picker.Item label="Enhance flexibility" value="Enhance flexibility" />
+                        <Picker.Item label="Maintain overall fitness" value="Maintain overall fitness" />
+                    </Picker>
+                </View>
 
-                    <Button title="Salvează" onPress={saveData} />
-                </ThemedView>
-            </ScrollView>
-        </KeyboardAvoidingView>
+                {/* Workout Intensity */}
+                <View style={styles.groupContainer}>
+                    <Text style={styles.label}>Cât de intens preferi antrenamentele? (1 - 5)</Text>
+                    <TextInput
+                        value={String(formData.workoutIntensity)}
+                        keyboardType="numeric"
+                        onChangeText={(value) =>
+                            handleSelectChange("workoutIntensity", Math.max(1, Math.min(5, Number(value))))
+                        }
+                        style={styles.input}
+                    />
+                </View>
+
+                {/* Dietary Preferences */}
+                <View style={styles.groupContainer}>
+                    <Text style={styles.label}>Ai preferințe sau restricții alimentare?</Text>
+                    {["Vegan", "Vegetarian", "Lactose intolerant", "Gluten-free"].map((item) => (
+                        <TouchableOpacity
+                            key={item}
+                            onPress={() => handleCheckboxChange(item)}
+                            style={[
+                                styles.checkbox,
+                                formData.dietaryPreferences.includes(item) && styles.checkboxSelected,
+                            ]}
+                        >
+                            <Text style={styles.checkboxText}>{item}</Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+
+                {/* Save Button */}
+                <View style={styles.groupContainer}>
+                    <Button title="Salvează" onPress={saveData} color="#FFA500" />
+                </View>
+            </View>
+        </ScrollView>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: '#000000',
-    },
-    scrollViewContent: {
         flexGrow: 1,
-        justifyContent: 'center',  // Centrarea conținutului în ecran
+        backgroundColor: "#000",
+        alignItems: "center",
+        justifyContent: "center",
         padding: 20,
     },
-    innerContainer: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 50,
+    card: {
+        width: "100%",
+        maxWidth: 600,
+        backgroundColor: "#1f2937",
+        padding: 20,
+        borderRadius: 10,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.8,
+        shadowRadius: 3,
+        elevation: 5,
     },
-    title: {
+    heading: {
         fontSize: 24,
-        fontWeight: 'bold',
+        fontWeight: "bold",
+        color: "#FFA500",
+        textAlign: "center",
         marginBottom: 20,
     },
+    groupContainer: {
+        marginBottom: 20,
+    },
+    label: {
+        fontSize: 14,
+        fontWeight: "bold",
+        color: "#FFF",
+        marginBottom: 10,
+    },
     input: {
-        height: 45,
-        width: '100%',
-        borderColor: '#ccc',
+        backgroundColor: "#374151",
+        borderColor: "#4b5563",
         borderWidth: 1,
-        borderRadius: 8,
-        marginBottom: 15,
-        paddingHorizontal: 10,
-        fontSize: 16,
-        backgroundColor: '#f8f8f8',
+        borderRadius: 5,
+        padding: 10,
+        color: "#FFF",
+    },
+    select: {
+        backgroundColor: "#374151",
+        color: "#FFF",
+        borderRadius: 5,
+    },
+    checkbox: {
+        backgroundColor: "#374151",
+        padding: 10,
+        borderRadius: 20,
+        marginBottom: 10,
+        alignItems: "center",
+    },
+    checkboxSelected: {
+        backgroundColor: "#FFA500",
+    },
+    checkboxText: {
+        color: "#FFF",
     },
 });
+
+export default FitnessGoalsSurvey;
