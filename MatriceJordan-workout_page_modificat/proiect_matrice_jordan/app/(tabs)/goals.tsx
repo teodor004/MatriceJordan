@@ -128,7 +128,7 @@ export default function GoalsScreen() {
         const processedData = processFormData(formData);
 
         try {
-            const response = await fetch("http://192.168.34.31:5000/api/goals/save/", {
+            const response = await fetch("http://192.168.0.63:5000/api/goals/save/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

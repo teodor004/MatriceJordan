@@ -4,8 +4,8 @@ const mysql = require('mysql2'); // Folosim mysql2 în loc de mysql
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',  // Modifică cu utilizatorul corect
-    password: 'LionelMessieTeo1',  // Modifică cu parola corectă
-    database: 'polihack',  // Modifică cu numele bazei tale de date
+    password: 'root',  // Modifică cu parola corectă
+    database: 'jordansport',  // Modifică cu numele bazei tale de date
 });
 
 db.connect((err) => {
